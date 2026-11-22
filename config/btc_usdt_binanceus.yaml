@@ -1,0 +1,90 @@
+# Two-Step Trader's Landing — BTC/USDT spot on Binance.US (for US-based users).
+#
+# Spot market => LONG-ONLY and NO LEVERAGE. Short setups are detected but skipped.
+# To study both sides in a backtest only, override: TSF__RISK__ALLOW_SHORTS=true
+# (you could not place those short trades on this exchange).
+#
+# VERIFY BEFORE RELYING ON RESULTS:
+#   * taker_fee: Binance.US announced 0% maker / 0.02% taker on spot pairs (Apr 2026).
+#     Fees change; check your account's fee schedule and update execution.taker_fee.
+#   * amount_step / price_tick / min_notional below are offline fallbacks used by the
+#     backtester. LiveBroker loads the real values from the exchange at runtime.
+#     Check them on your machine with:
+#       .venv/bin/python -c "import ccxt; e=ccxt.binanceus(); e.load_markets(); m=e.market('BTC/USDT'); print(m['precision'], m['limits'])"
+#   * BTC/USD is also listed and may be more liquid; change exchange.symbol to try it.
+
+exchange:
+  id: binanceus
+  symbol: BTC/USDT
+  market_type: spot
+  api_key_env: BINANCEUS_API_KEY       # name of env var, never the key itself
+  api_secret_env: BINANCEUS_API_SECRET
+  sandbox: false                       # Binance.US has no public testnet
+  enable_rate_limit: true
+  request_timeout_ms: 30000
+  max_retries: 5
+  retry_backoff_seconds: 2.0
+  amount_step: 0.00001
+  price_tick: 0.01
+  min_amount: 0.00001
+  min_notional: 10.0
+
+data:
+  trend_timeframe: 15m
+  entry_timeframe: 5m
+  source: ccxt
+  start: "2024-06-01"
+  end: "2024-12-01"
+  cache_dir: cache
+  derive_trend_from_entry: true
+  fetch_limit: 1000
+  min_history_bars: 200
+  outlier_return_threshold: 0.15
+  max_gap_ratio: 0.02
+
+strategy:
+  atr_period: 14
+  atr_multiplier: 2.0
+  band_source: close
+  trend_lookback: 20
+  swing_left: 2
+  swing_right: 2
+  min_swings: 2
+  require_structure_intact: true
+  zone_sources: [swing, atr_band]
+  zone_tolerance_atr: 0.1
+  min_wick_to_range: 0.5
+  min_wick_to_body: 1.5
+  max_signal_bar_range_atr: 3.0
+  min_volume: 0.0
+  stop_atr_multiplier: 2.0
+  reward_risk: 2.0
+  pullback_max_m5_bars: 288
+
+risk:
+  risk_per_trade: 0.01
+  max_positions_per_symbol: 1
+  max_total_positions: 1
+  max_leverage: 1.0          # spot: position notional can never exceed equity
+  daily_loss_limit: 0.03
+  allow_shorts: false        # spot cannot short
+
+execution:
+  taker_fee: 0.0002          # 0.02% — confirm against your Binance.US fee tier
+  slippage: 0.0005           # thinner order book than Binance global; keep conservative
+  assumed_spread: 0.0002
+  max_spread: 0.001
+  max_slippage: 0.002
+  dry_run: true
+  poll_interval_seconds: 10
+
+backtest:
+  initial_equity: 10000
+  output_dir: reports/binanceus
+  trade_db: reports/binanceus/trades.sqlite
+  periods_per_year: 365
+  risk_free_rate: 0.0
+
+logging:
+  level: INFO
+  file: logs/framework.log

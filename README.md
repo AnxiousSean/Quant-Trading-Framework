@@ -19,6 +19,7 @@ Channel), adapted from Forex to 24/7 crypto markets.
 ├── requirements.txt              # pinned dependencies
 ├── config/
 │   ├── btc_usdt.yaml             # BTC/USDT perpetual on Binance USDⓈ-M (defaults)
+│   ├── btc_usdt_binanceus.yaml   # BTC/USDT spot on Binance.US (US users, long-only)
 │   └── synthetic_demo.yaml       # offline demo, no network/API keys
 ├── trading_framework/
 │   ├── config/settings.py        # pydantic models, YAML loader, TSF__ env overrides
@@ -49,7 +50,7 @@ Channel), adapted from Forex to 24/7 crypto markets.
 │   │   └── report.py             # metrics.json/csv, equity.csv, trades.csv, report.html
 │   ├── logging_setup.py
 │   └── timeframes.py
-└── tests/                        # pytest suite (59 tests, synthetic data)
+└── tests/                        # pytest suite (60 tests, synthetic data)
 ```
 
 ## Setup
@@ -152,8 +153,23 @@ Key parameters (defaults):
 | execution | `max_spread` / `max_slippage` | 0.001 / 0.002 | skip entries on wide spreads; abort live fills beyond slippage |
 | execution | `dry_run` | true | LiveBroker never sends orders unless false **and** `--live` |
 
-For **spot** markets set `exchange.id: binance`, `symbol: BTC/USDT`, `market_type: spot`,
-`risk.allow_shorts: false`, `risk.max_leverage: 1.0`.
+### US users: `config/btc_usdt_binanceus.yaml`
+
+Binance's international exchange (used by `btc_usdt.yaml`) refuses connections from the US
+("Service unavailable from a restricted location"). `config/btc_usdt_binanceus.yaml` targets
+BTC/USDT **spot** on Binance.US instead: long-only, no leverage, 0.02% taker fee (confirm your
+own tier). API keys go in `BINANCEUS_API_KEY` / `BINANCEUS_API_SECRET`.
+
+```bash
+scripts/setup_linux.sh --skip-tests --check-exchange --config config/btc_usdt_binanceus.yaml
+```
+
+```bash
+python main.py backtest --config config/btc_usdt_binanceus.yaml
+```
+
+For other spot markets set `exchange.id`, `symbol`, `market_type: spot`,
+`risk.allow_shorts: false` and `risk.max_leverage: 1.0` the same way.
 
 ## Strategy implementation
 
