@@ -201,3 +201,10 @@ def test_sample_config_loads():
     cfg = load_config("config/btc_usdt.yaml", environ={})
     assert cfg.exchange.id == "binanceusdm" and cfg.execution.dry_run is True
     assert cfg.execution.taker_fee == 0.0004 and cfg.execution.slippage == 0.0005
+
+
+def test_binanceus_config_is_spot_long_only():
+    cfg = load_config("config/btc_usdt_binanceus.yaml", environ={})
+    assert cfg.exchange.id == "binanceus" and cfg.exchange.market_type == "spot"
+    assert cfg.risk.allow_shorts is False and cfg.risk.max_leverage == 1.0
+    assert cfg.execution.dry_run is True
