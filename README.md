@@ -56,6 +56,23 @@ Channel), adapted from Forex to 24/7 crypto markets.
 
 Python 3.10+.
 
+### Linux (recommended for long-running paper trading)
+
+`scripts/setup_linux.sh` finds Python 3.10+, creates `.venv`, installs the pinned requirements,
+runs the tests and checks that the system clock is NTP-synchronised. It is safe to re-run.
+
+```bash
+scripts/setup_linux.sh --check-exchange
+```
+
+Options: `--install-deps` (apt/dnf install of `python3-venv`/pip via sudo), `--skip-tests`,
+`--check-exchange` (public API reachability and clock drift against the exchange),
+`--install-service` (writes a systemd **user** service that runs `paper` mode; it is not started
+automatically), `--config PATH`, `--python PATH`. API keys for the service go in
+`~/.config/twostep/env` (created with mode 600), never in the repository.
+
+### Manual setup
+
 ```bash
 python -m venv .venv
 ```
