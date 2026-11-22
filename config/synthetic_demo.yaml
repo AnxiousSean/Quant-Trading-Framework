@@ -1,0 +1,12 @@
+# Offline demo: runs on generated data, no network or API keys needed.
+exchange:
+  id: binanceusdm
+  symbol: BTC/USDT:USDT
+data:
+  source: synthetic
+  synthetic_bars: 20000
+  synthetic_seed: 7
+backtest:
+  initial_equity: 10000
+  output_dir: reports/synthetic
+  trade_db: reports/synthetic/trades.sqlite
